@@ -15,6 +15,7 @@ import { Server } from "socket.io";
 
 import { logger } from "./utils/logger";
 import { SocketActions } from "./utils/socket";
+import { checkJwt } from "./middleware/auth0";
 
 dotenv.config();
 const app = express();
@@ -108,10 +109,9 @@ io.on("connection", (socket) => {
 });
 
 app.use("/api", apiRateLimiter);
-// app.use("/api", checkJwt);
+
 
 // Routes
-
 app.use("/api/user", usersRouter);
 app.use(ErrorHandler);
 
