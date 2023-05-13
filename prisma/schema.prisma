@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  firstName       String?
+  lastName        String?
+  email           String            @unique
+  files           File[]
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  sessionRelation SessionRelation[]
+}
+
+model FileTemplate {
+  id          Int      @id @default(autoincrement())
+  language    String
+  starterCode String
+  title       String?
+  question    String?
+  label       String?
+  output      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  language  String
+  code      String
+  title     String?
+  question  String?
+  label     String?
+  output    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id        Int       @id @default(autoincrement())
+  startTime DateTime? @db.Time
+  endTime   DateTime? @db.Time
+  date      DateTime  @db.Date
+  note      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum SessionRole {
+  author
+  member
+}
+
+model SessionRelation {
+  id        Int         @id @default(autoincrement())
+  user      User        @relation(fields: [userId], references: [id])
+  role      SessionRole
+  userId    Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+// npx prisma migrate dev --name init     
