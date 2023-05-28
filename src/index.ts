@@ -7,6 +7,7 @@ import createError from "http-errors";
 import morganLogger from "morgan";
 import { ErrorHandler } from "./middleware/error-handler";
 import { apiRateLimiter } from "./middleware/rate-limiter";
+import _100msRouter from "./routes/100ms.route";
 import usersRouter from "./routes/user.route";
 
 // for socket io
@@ -15,7 +16,6 @@ import { Server } from "socket.io";
 
 import { logger } from "./utils/logger";
 import { SocketActions } from "./utils/socket";
-import { checkJwt } from "./middleware/auth0";
 
 dotenv.config();
 const app = express();
@@ -40,7 +40,7 @@ interface UserSocketMap {
 }
 
 interface UserCursorMap {
-    [key: string]: { userName: string; cursorPosition: { lineNumber: number; column: number } };
+    [key: string]: { userName: string; cursorPosition: { lineNumber: number; column: number }; sessionID: string };
 }
 
 // TODO use cache storage
@@ -58,12 +58,13 @@ const getAllConnectedClients = (sessionId: string) => {
 
 io.on("connection", (socket) => {
     socket.on(SocketActions.JOIN, ({ sessionId, userName }) => {
-        userSocketMap[socket.id] = userName;
         socket.join(sessionId);
+        userSocketMap[socket.id] = userName;
         const clients = getAllConnectedClients(sessionId);
         const cursorPositionsForSessionId = Object.keys(userCursorMap).reduce((acc, socketId) => {
-            const { userName, cursorPosition } = userCursorMap[socketId];
-            acc[userName] = { userName, cursorPosition };
+            const { userName, cursorPosition, sessionID } = userCursorMap[socketId];
+            if(sessionID !== sessionId) return acc;
+            acc[userName] = { userName, cursorPosition, sessionID };
             return acc;
         }, {} as UserCursorMap);
 
@@ -78,7 +79,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on(SocketActions.CURSOR_POSITION_CHANGED, ({ sessionId, cursorPosition, userName }) => {
-        userCursorMap[socket.id] = { userName, cursorPosition };
+        userCursorMap[socket.id] = { userName, cursorPosition, sessionID: sessionId };
         console.log(userName, cursorPosition);
 
         const clients = getAllConnectedClients(sessionId);
@@ -110,9 +111,9 @@ io.on("connection", (socket) => {
 
 app.use("/api", apiRateLimiter);
 
-
 // Routes
 app.use("/api/user", usersRouter);
+app.use("/api/100ms", _100msRouter);
 app.use(ErrorHandler);
 
 // Catch 404 and forward to error handler
