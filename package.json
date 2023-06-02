@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon src/index.ts",
         "start": "node dist/index.js",
-        "build": "npm run build:db && tsc",
+        "build": "npx prisma migrate dev --name init && npm run build:db && tsc",
         "build:db": "npx prisma format && npx prisma generate",
         "prepare": "husky install",
         "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
