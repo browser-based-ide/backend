@@ -21,7 +21,7 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: "http://localhost:3001" }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(morganLogger("dev"));
@@ -30,7 +30,7 @@ app.use(morganLogger("dev"));
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "http://localhost:3001",
         methods: ["GET", "POST"],
     },
 });

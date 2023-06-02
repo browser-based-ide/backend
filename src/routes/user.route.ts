@@ -32,7 +32,7 @@ router.get("/:id", checkJwt, async (req: Request, res: Response, next: NextFunct
         if (user) {
             return res.status(200).json(user);
         }
-        return res.status(404).json({ error: "User not found" });
+        return res.status(200).json({ error: "User not found" });
     } catch (error: any) {
         next(error);
     }
@@ -42,7 +42,6 @@ router.post(
     "/",
     body("email").isEmail(),
     body("firstName").isString().isLength({ min: 1 }),
-    checkJwt,
     async (req: Request, res: Response, next: NextFunction) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -53,6 +52,7 @@ router.post(
             const newUser = await UserService.createUser(user);
             return res.status(201).json(newUser);
         } catch (error: any) {
+            console.log(error);
             next(error);
         }
     },
