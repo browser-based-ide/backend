@@ -21,7 +21,7 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: "http://localhost:3001" }));
+app.use(cors({ origin: ["http://localhost:3001", "https://browser-based-ide.netlify.app"] }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(morganLogger("dev"));
@@ -30,7 +30,7 @@ app.use(morganLogger("dev"));
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3001",
+        origin: ["http://localhost:3001", "https://browser-based-ide.netlify.app"],
         methods: ["GET", "POST"],
     },
 });
@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
         const clients = getAllConnectedClients(sessionId);
         const cursorPositionsForSessionId = Object.keys(userCursorMap).reduce((acc, socketId) => {
             const { userName, cursorPosition, sessionID } = userCursorMap[socketId];
-            if(sessionID !== sessionId) return acc;
+            if (sessionID !== sessionId) return acc;
             acc[userName] = { userName, cursorPosition, sessionID };
             return acc;
         }, {} as UserCursorMap);
